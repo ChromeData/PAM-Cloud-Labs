@@ -10,23 +10,31 @@ and documents what actually happened — including the parts that broke.
 
 ## Labs
 
-| # | Lab | What it proves | Status |
-|---|-----|----------------|--------|
-| [01](https://github.com/ChromeData/Conjur-Terraform-AWS) | **Conjur secrets injection into a Terraform/AWS pipeline** | Machine identity, dynamic secrets, zero credentials on disk or in state | 🟡 In progress |
-| [02](https://github.com/ChromeData/SkyArk-Shadow-Admin-Audit) | **Shadow-admin discovery across AWS + Azure** | Privilege-escalation path analysis in two clouds | 🟡 In progress |
-| [03](https://github.com/ChromeData/RHEL9-Hardened-Lab) | **Self-building hardened RHEL 9 lab** | CIS/STIG remediation as code, measured before and after | 🟡 In progress |
-| [04](https://github.com/ChromeData/Sentinel-Privileged-Access) | **Privileged-access detections for Microsoft Sentinel** | Turning PAM domain knowledge into working detection logic | 🟡 In progress |
-| [05](https://github.com/ChromeData/Secrets-Manager-PAM) | **AWS Secrets Manager as a PAM control plane** | Rotation, least-privilege resource policies, and an honest CyberArk comparison | 🟡 In progress |
-| [06](https://github.com/ChromeData/IAM-Least-Privilege) | **IAM least-privilege & break-glass broker roles** | Minimal roles proven with Access Analyzer + Checkov | 🟡 In progress |
-| [07](https://github.com/ChromeData/IaC-Security-Gate) | **IaC security gate (pre-commit + CI)** | Blocking secrets and misconfig before they reach the repo | 🟡 In progress |
-| [08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan) | **Conjur secrets on Kubernetes + KubiScan RBAC audit** | Runtime secret injection into pods, then a cluster RBAC audit | 🟡 In progress |
-| [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi-account security baseline** | SRA-aligned org baseline driven to zero with Prowler | 🟡 In progress |
-| [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing-zone privileged-access guardrails** | Azure Policy enforcement + Verified Modules | 🟡 In progress |
-| [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Privileged-account lifecycle as idempotent runbooks | 🟡 In progress |
+Every lab is built, code-complete, and verified — Terraform `validate`, Pester,
+or pytest, most with CI. **Built** means the code works and is tested; the last
+step, a live run producing `findings/`, is per-lab and marked below.
+
+| # | Lab | What it proves | Verification |
+|---|-----|----------------|--------------|
+| [01](https://github.com/ChromeData/Conjur-Terraform-AWS) | **Conjur secrets injection into a Terraform/AWS pipeline** | Zero credentials on disk or in state — Summon vs. the data-source leak, measured | 🟢 `terraform validate` |
+| [02](https://github.com/ChromeData/SkyArk-Shadow-Admin-Audit) | **Shadow-admin discovery across AWS + Azure** | Privilege-escalation path analysis, scored against ground truth | 🟢 9 tests · 2 TF roots |
+| [03](https://github.com/ChromeData/RHEL9-Hardened-Lab) | **Self-building hardened RHEL 9 lab** | CIS/STIG remediation as code, measured before and after | 🟢 8 tests · CI |
+| [04](https://github.com/ChromeData/Sentinel-Privileged-Access) | **Privileged-access detections for Microsoft Sentinel** | PAM domain knowledge as working detection logic | 🟢 13 tests · CI |
+| [05](https://github.com/ChromeData/Secrets-Manager-PAM) | **AWS Secrets Manager as a PAM control plane** | Rotation, three-layer access model, honest CyberArk comparison | 🟢 `terraform validate` |
+| [06](https://github.com/ChromeData/IAM-Least-Privilege) | **IAM least-privilege & break-glass broker roles** | Minimal roles proven with Access Analyzer + Checkov | 🟢 validate · Checkov CI |
+| [07](https://github.com/ChromeData/IaC-Security-Gate) | **IaC security gate (pre-commit + CI)** | Blocks secrets + misconfig — self-test proves bad fails, good passes | 🟢 self-test passing |
+| [08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan) | **Conjur secrets on Kubernetes + KubiScan RBAC audit** | Runtime injection + an offline RBAC linter cross-checking KubiScan | 🟢 11 tests · CI |
+| [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi-account security baseline** | SRA-aligned baseline that passes its own audit, driven to zero with Prowler | 🟢 9 tests · validate |
+| [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing-zone privileged-access guardrails** | Azure Policy enforcement, GUID-verified | 🟢 15 tests · Bicep CI |
+| [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Privileged-account lifecycle + drift reconciliation as idempotent runbooks | 🟢 20 tests · CI |
 
 See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for how the shortlisted repos map across these labs, and [PROFILE-README-TEMPLATE.md](./PROFILE-README-TEMPLATE.md) for the profile page.
 
-Status key: 🟡 In progress · 🟢 Complete · 🔵 Complete + written up
+**On status:** every lab's code is tested and green. What's not yet in each repo
+is a `findings/` folder — the output of running the lab against live cloud
+infrastructure. That's the deliberate last step (it costs real money and real
+credentials), and each repo's `LAB-NOTES.md` lists the exact questions that run
+will answer.
 
 ---
 
@@ -36,16 +44,27 @@ Every lab follows the same structure, and the structure is the point:
 
 ```
 lab-name/
-├── README.md        # what it is, how to run it, what I found
+├── README.md        # what it is, how to run it, what it proves
 ├── LAB-NOTES.md     # the running log — errors, dead ends, fixes
-├── terraform/       # or ansible/ — the environment, as code
-├── scripts/         # bootstrap and teardown
-└── findings/        # output, analysis, screenshots
+├── tests/           # offline tests for the analytical core (most labs)
+├── terraform/       # or ansible/ bicep/ policy/ — the environment, as code
+├── scripts/         # bootstrap, teardown, and the scoring/analysis logic
+└── findings/        # output, analysis, screenshots (from the live run)
 ```
 
-**LAB-NOTES.md is the differentiator.** Anyone can push a clean Terraform module.
-A dated log of "this failed, here's the error, here's why, here's the fix" is the
-thing that reads as real experience — because it is.
+**Two things make these more than a folder of Terraform:**
+
+**The tested core.** Wherever a lab has analytical logic — a SkyArk scorer, a
+SCAP delta, an RBAC linter, a drift reconciler, a policy validator — that logic
+is unit-tested offline and runs in CI. If the number a lab reports is wrong, a
+test goes red. That's the difference between "I ran a tool" and "I built the
+thing that checks the tool."
+
+**LAB-NOTES.md.** A dated log of "this failed, here's the error, here's why,
+here's the fix" reads as real experience because it is. Several of these labs
+found genuine bugs during the build — a Terraform dependency cycle, a policy
+that would have protected nothing, a security gate that failed its own scan —
+and the notes record them.
 
 ---
 
