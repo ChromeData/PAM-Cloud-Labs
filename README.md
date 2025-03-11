@@ -22,7 +22,7 @@ Every lab is built, code complete, and verified with `terraform validate`, Peste
 | [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing zone guardrails** | Azure Policy enforcement, role ID verified | 15 tests, Bicep CI |
 | [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 20 tests, CI |
 
-See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for how the shortlisted repos map across these labs, and [PROFILE-README-TEMPLATE.md](./PROFILE-README-TEMPLATE.md) for the profile page.
+See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for which upstream tool each lab depends on and under what license.
 
 **On status:** every lab's code is tested and green. What is not yet in each repo is a `findings/` folder, the output of running the lab against live cloud infrastructure. That is the deliberate last step (it costs real money and real credentials), and each repo's `LAB-NOTES.md` lists the exact questions that run will answer.
 
