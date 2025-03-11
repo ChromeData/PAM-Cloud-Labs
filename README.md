@@ -24,6 +24,14 @@ Most ran without any cloud account: Docker for Conjur and Kubernetes, LocalStack
 | [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing zone guardrails** | Guardrail definitions unit tested, Bicep verified offline. Deny path needs Azure | 15 tests; Bicep verified with PSRule, 36 rules |
 | [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 29 tests; reconciler run against a stub tenant |
 
+### Positive controls
+
+Seven times while building these labs, a tool reported success while reading nothing: gitleaks after a version bump, checkov twice on nested ARM, the RBAC linter on live `kubectl` output, PSRule twice, and a pytest skip guard declared where pytest never looks. None announced itself.
+
+Two more of the same shape appeared in the checks written *for* those bugs, which is the part worth sitting with.
+
+So every check here has to count findings rather than trust an exit code, and has to have been **observed failing** before it counts as evidence. [POSITIVE-CONTROLS.md](./POSITIVE-CONTROLS.md) lists each one and exactly what breaks it.
+
 See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for which upstream tool each lab depends on and under what license.
 
 **On status:** every lab has run and every lab has `findings/`. CI is green across all 11.
