@@ -6,25 +6,31 @@ Hands on lab work at the meeting point of privileged access management and cloud
 
 ## Labs
 
-Every lab is built, code complete, and verified with `terraform validate`, Pester, or pytest, most with CI. Built means the code works and is tested. The last step, a live run that produces `findings/`, is per lab and noted below.
+Every lab has been **run**, not just built. Each one has a `findings/` folder recording what actually happened, and the Verification column below says what was executed and against what.
+
+Most ran without any cloud account: Docker for Conjur and Kubernetes, LocalStack for AWS IAM and S3, a Rocky container for OpenSCAP, Microsoft's Kusto container for KQL, and a stub tenant for psPAS. Where a claim genuinely needs a real subscription, that is stated in the lab rather than glossed.
 
 | # | Lab | What it proves | Verification |
 |---|-----|----------------|--------------|
-| [01](https://github.com/ChromeData/Conjur-Terraform-AWS) | **Conjur secrets into a Terraform/AWS pipeline** | No credentials on disk or in state. Summon vs the data source leak, measured | `terraform validate` |
-| [02](https://github.com/ChromeData/SkyArk-Shadow-Admin-Audit) | **Shadow admin discovery across AWS and Azure** | Escalation path analysis, scored against ground truth | 9 tests, 2 TF roots |
-| [03](https://github.com/ChromeData/RHEL9-Hardened-Lab) | **Self building hardened RHEL 9 lab** | STIG remediation as code, measured before and after | 8 tests, CI |
-| [04](https://github.com/ChromeData/Sentinel-Privileged-Access) | **Privileged access detections for Microsoft Sentinel** | PAM knowledge as working detection logic | 13 tests, CI |
-| [05](https://github.com/ChromeData/Secrets-Manager-PAM) | **AWS Secrets Manager as a PAM control plane** | Rotation, three layer access, honest CyberArk comparison | `terraform validate` |
-| [06](https://github.com/ChromeData/IAM-Least-Privilege) | **IAM least privilege and break glass roles** | Minimal roles proven with Access Analyzer and Checkov | validate, Checkov CI |
-| [07](https://github.com/ChromeData/IaC-Security-Gate) | **IaC security gate** | Blocks secrets and misconfig. Self test proves bad fails, good passes | self test passing |
-| [08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan) | **Conjur secrets on Kubernetes plus KubiScan** | Runtime injection plus an offline RBAC linter cross checking KubiScan | 11 tests, CI |
-| [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi account security baseline** | A baseline that passes its own audit, driven to zero with Prowler | 9 tests, validate |
-| [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing zone guardrails** | Azure Policy enforcement, role ID verified | 15 tests, Bicep CI |
-| [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 20 tests, CI |
+| [01](https://github.com/ChromeData/Conjur-Terraform-AWS) | **Conjur secrets into a Terraform/AWS pipeline** | No credentials on disk or in state. Summon vs the data source leak, measured | Docker run, 4 bugs fixed, credential leak measured |
+| [02](https://github.com/ChromeData/SkyArk-Shadow-Admin-Audit) | **Shadow admin discovery across AWS and Azure** | Escalation path analysis, scored against ground truth | 9 tests; paths planted on LocalStack, ground truth verified |
+| [03](https://github.com/ChromeData/RHEL9-Hardened-Lab) | **Self building hardened RHEL 9 lab** | STIG remediation as code, measured before and after | 8 tests; real OpenSCAP scan, remediate, rescan |
+| [04](https://github.com/ChromeData/Sentinel-Privileged-Access) | **Privileged access detections for Microsoft Sentinel** | PAM knowledge as working detection logic | 24 tests; all 4 detections executed against Kusto |
+| [05](https://github.com/ChromeData/Secrets-Manager-PAM) | **AWS Secrets Manager as a PAM control plane** | Rotation, three layer access, honest CyberArk comparison | Applied on LocalStack, CMK and retrieval verified |
+| [06](https://github.com/ChromeData/IAM-Least-Privilege) | **IAM least privilege and break glass roles** | Minimal roles proven with Access Analyzer and Checkov | Applied on LocalStack, controls read back from IAM |
+| [07](https://github.com/ChromeData/IaC-Security-Gate) | **IaC security gate** | Blocks secrets and misconfig. Self test proves bad fails, good passes | 3 scanners run for real, bad fails, good passes |
+| [08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan) | **Conjur secrets on Kubernetes plus KubiScan** | An offline RBAC linter, run against a real cluster. KubiScan cross-check still pending | 15 tests; real kind cluster, 15 RBAC findings |
+| [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi account security baseline** | A baseline that passes its own audit. Prowler scoring needs a real account | 14 tests; trail bucket applied and audited |
+| [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing zone guardrails** | Guardrail definitions unit tested, Bicep verified offline. Deny path needs Azure | 15 tests; Bicep verified with PSRule, 36 rules |
+| [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 29 tests; reconciler run against a stub tenant |
 
 See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for which upstream tool each lab depends on and under what license.
 
-**On status:** every lab's code is tested and green. What is not yet in each repo is a `findings/` folder, the output of running the lab against live cloud infrastructure. That is the deliberate last step (it costs real money and real credentials), and each repo's `LAB-NOTES.md` lists the exact questions that run will answer.
+**On status:** every lab has run and every lab has `findings/`. CI is green across all 11.
+
+What each lab still cannot prove is stated in its own README and notes rather than averaged away here. The largest remaining gap is shared rather than per-lab: LocalStack creates IAM objects faithfully and **evaluates no policy at request time**, so every "this control actually blocks the request" claim across labs 02, 05, 06 and 09 is configured-and-verified, not observed-blocking. One free-tier AWS account closes all four. Labs 05, 09 and 10 additionally need a real subscription for CloudTrail data events, GuardDuty and Azure Policy deny.
+
+The running the labs did produce found real bugs, including several in the labs' own tooling: an RBAC linter that reported a clean cluster while four cluster-admin-equivalent roles sat in it, a Key Vault hardened against access but keeping no record of who accessed it, a CloudTrail bucket policy trusting the CloudTrail service globally rather than its own trail, and a module default that silently required MFA on a machine role that can never present it.
 
 ## How these labs are built
 
