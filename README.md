@@ -39,6 +39,7 @@ Most ran without any cloud account: Docker for Conjur and Kubernetes, LocalStack
 | [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi account security baseline** | A baseline that passes its own audit. Prowler scoring needs a real account | 14 tests; trail bucket applied and audited |
 | [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing zone guardrails** | Guardrail definitions unit tested, Bicep verified offline. Deny path needs Azure | 15 tests; Bicep verified with PSRule, 36 rules |
 | [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 29 tests; reconciler run against a stub tenant |
+| [12](https://github.com/ChromeData/Network-Isolation-Access-Control) | **Network isolation as an access control** | The layer under IAM: can this host even reach the endpoint | 15 tests; verified on real AWS, negative control run live |
 
 ### Positive controls
 
