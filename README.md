@@ -4,6 +4,22 @@ Hands on lab work at the meeting point of privileged access management and cloud
 
 **Stack:** CyberArk/Idira, Linux (RHEL 9), AWS, Azure
 
+## What running them actually caught
+
+Building infrastructure is the easy half. These are the defects that only appeared once the environments were stood up and the deployed objects were read back from the API rather than trusted from the config.
+
+**A machine role that no machine could ever assume.** The `terraform-aws-modules/iam` module defaults `role_requires_mfa` to `true`. The DB broker is assumed by a service, and a service cannot present MFA, so the role deployed looking perfect, passed `terraform validate`, passed Checkov, and would have failed the first time anything tried to use it. Visible only by reading the deployed trust policy. — [lab 06](https://github.com/ChromeData/IAM-Least-Privilege)
+
+**A CloudTrail bucket policy that trusted every AWS account.** Neither statement carried `aws:SourceArn`. The principal is the CloudTrail *service*, which is not scoped to an account, so the policy trusted CloudTrail globally rather than this account's trail — the cross-account confused-deputy pattern AWS has documented since 2022. Encryption and public access were both fine; the trust boundary was the thing nobody was checking. — [lab 09](https://github.com/ChromeData/AWS-Multi-Account-Baseline)
+
+**A Key Vault hardened against access that recorded nobody who accessed it.** Soft delete, purge protection, network ACLs, RBAC — all correct. No diagnostic setting, so no `AuditEvent`. A vault nobody can reach is half a control; the other half is knowing who reached it. — [lab 10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails)
+
+**An RBAC linter that reported a clean cluster.** Run against a live kind cluster holding four deliberately cluster-admin-equivalent roles, it printed `No risky RBAC found` and exited 0. `kubectl -o json` wraps everything in a single `kind: List` document, and the top-level kind check returned nothing. Every unit test passed the entire time, because every unit test fed it a hand-written manifest — the one shape it never meets in production. — [lab 08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan)
+
+**Three credentials in plaintext in `terraform.tfstate`.** Minimal config, no AWS provider, nothing referencing the values. They landed in state anyway, including the full 40-character secret key. The lab's central claim, measured rather than asserted. — [lab 01](https://github.com/ChromeData/Conjur-Terraform-AWS)
+
+Each one is written up in that lab's `LAB-NOTES.md` with the error output, the cause, and the fix.
+
 ## Labs
 
 Every lab has been **run**, not just built. Each one has a `findings/` folder recording what actually happened, and the Verification column below says what was executed and against what.
@@ -39,6 +55,20 @@ See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for which upstream tool each lab depe
 What each lab still cannot prove is stated in its own README and notes rather than averaged away here. The largest remaining gap is shared rather than per-lab: LocalStack creates IAM objects faithfully and **evaluates no policy at request time**, so every "this control actually blocks the request" claim across labs 02, 05, 06 and 09 is configured-and-verified, not observed-blocking. One free-tier AWS account closes all four. Labs 05, 09 and 10 additionally need a real subscription for CloudTrail data events, GuardDuty and Azure Policy deny.
 
 The running the labs did produce found real bugs, including several in the labs' own tooling: an RBAC linter that reported a clean cluster while four cluster-admin-equivalent roles sat in it, a Key Vault hardened against access but keeping no record of who accessed it, a CloudTrail bucket policy trusting the CloudTrail service globally rather than its own trail, and a module default that silently required MFA on a machine role that can never present it.
+
+## Linux depth
+
+Lab 03 is the Linux one and it is not a Docker exercise. OpenSCAP against the DISA STIG profile for RHEL 9, scan then `oscap --remediate` then rescan, with the delta computed by a scorer in `scripts/`.
+
+```
+Baseline :  62 / 71 passed (87.3%)
+Hardened :  68 / 71 passed (95.8%)
+Delta    : +6 controls (+8.5 pp)
+```
+
+The interesting part is the denominator. Of the profile's 1532 rules, 412 came back `notapplicable` because that run was in a container: no kernel of its own, no bootloader, no GRUB, no auditd, no physical console. So the honest reading is +8.5 points on the 71-rule userspace subset, **not** a STIG compliance figure — which is exactly why the scorer excludes skips from the denominator. Counting them would have reported roughly 4% and looked catastrophic instead of narrow.
+
+Also confirmed a distro trap the playbook had wrong: the datastream on Rocky is `ssg-rl9-ds.xml`, not `ssg-almalinux9-ds.xml`. Wrong path means zero rules evaluated, which presents as a clean pass.
 
 ## How these labs are built
 
