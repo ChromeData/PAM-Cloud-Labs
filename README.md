@@ -12,25 +12,21 @@ and documents what actually happened — including the parts that broke.
 
 | # | Lab | What it proves | Status |
 |---|-----|----------------|--------|
-| [01](./01-conjur-terraform-aws) | **Conjur secrets injection into a Terraform/AWS pipeline** | Machine identity, dynamic secrets, zero credentials on disk or in state | 🟡 In progress |
-| [02](./02-skyark-shadow-admin-audit) | **Shadow-admin discovery across AWS + Azure** | Privilege-escalation path analysis in two clouds | 🟡 In progress |
-| [03](./03-rhel9-hardened-lab) | **Self-building hardened RHEL 9 lab** | CIS/STIG remediation as code, measured before and after | 🟡 In progress |
-| [04](./04-sentinel-privileged-access) | **Privileged-access detections for Microsoft Sentinel** | Turning PAM domain knowledge into working detection logic | 🟡 In progress |
-| [05](./05-secrets-manager-pam) | **AWS Secrets Manager as a PAM control plane** | Rotation, least-privilege resource policies, and an honest CyberArk comparison | 🟡 In progress |
-| [06](./06-iam-least-privilege) | **IAM least-privilege & break-glass broker roles** | Minimal roles proven with Access Analyzer + Checkov | 🟡 In progress |
-| [07](./07-iac-security-gate) | **IaC security gate (pre-commit + CI)** | Blocking secrets and misconfig before they reach the repo | 🟡 In progress |
-| [08](./08-conjur-kubernetes-kubiscan) | **Conjur secrets on Kubernetes + KubiScan RBAC audit** | Runtime secret injection into pods, then a cluster RBAC audit | 🟡 In progress |
-| [09](./09-aws-multiaccount-baseline) | **AWS multi-account security baseline** | SRA-aligned org baseline driven to zero with Prowler | 🟡 In progress |
-| [10](./10-azure-landing-zone-guardrails) | **Azure landing-zone privileged-access guardrails** | Azure Policy enforcement + Verified Modules | 🟡 In progress |
-| [11](./11-pspas-pam-automation) | **CyberArk/Idira PAM automation with psPAS** | Privileged-account lifecycle as idempotent runbooks | 🟡 In progress |
+| [01](https://github.com/ChromeData/Conjur-Terraform-AWS) | **Conjur secrets injection into a Terraform/AWS pipeline** | Machine identity, dynamic secrets, zero credentials on disk or in state | 🟡 In progress |
+| [02](https://github.com/ChromeData/SkyArk-Shadow-Admin-Audit) | **Shadow-admin discovery across AWS + Azure** | Privilege-escalation path analysis in two clouds | 🟡 In progress |
+| [03](https://github.com/ChromeData/RHEL9-Hardened-Lab) | **Self-building hardened RHEL 9 lab** | CIS/STIG remediation as code, measured before and after | 🟡 In progress |
+| [04](https://github.com/ChromeData/Sentinel-Privileged-Access) | **Privileged-access detections for Microsoft Sentinel** | Turning PAM domain knowledge into working detection logic | 🟡 In progress |
+| [05](https://github.com/ChromeData/Secrets-Manager-PAM) | **AWS Secrets Manager as a PAM control plane** | Rotation, least-privilege resource policies, and an honest CyberArk comparison | 🟡 In progress |
+| [06](https://github.com/ChromeData/IAM-Least-Privilege) | **IAM least-privilege & break-glass broker roles** | Minimal roles proven with Access Analyzer + Checkov | 🟡 In progress |
+| [07](https://github.com/ChromeData/IaC-Security-Gate) | **IaC security gate (pre-commit + CI)** | Blocking secrets and misconfig before they reach the repo | 🟡 In progress |
+| [08](https://github.com/ChromeData/Conjur-Kubernetes-KubiScan) | **Conjur secrets on Kubernetes + KubiScan RBAC audit** | Runtime secret injection into pods, then a cluster RBAC audit | 🟡 In progress |
+| [09](https://github.com/ChromeData/AWS-Multi-Account-Baseline) | **AWS multi-account security baseline** | SRA-aligned org baseline driven to zero with Prowler | 🟡 In progress |
+| [10](https://github.com/ChromeData/Azure-Landing-Zone-Guardrails) | **Azure landing-zone privileged-access guardrails** | Azure Policy enforcement + Verified Modules | 🟡 In progress |
+| [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Privileged-account lifecycle as idempotent runbooks | 🟡 In progress |
 
 See [REPO-COVERAGE.md](./REPO-COVERAGE.md) for how the shortlisted repos map across these labs, and [PROFILE-README-TEMPLATE.md](./PROFILE-README-TEMPLATE.md) for the profile page.
 
-## Publishing to GitHub
-
-Run **[`PUSH.sh`](./PUSH.sh)** — it detects your GitHub username from the `gh` CLI, creates a repo per lab plus the profile repo, pushes everything, and pins the six strongest. Preview first with `./PUSH.sh --dry-run`. Prereqs: [GitHub CLI](https://cli.github.com) installed and `gh auth login` done.
-
-Update the status column as you go: 🟡 In progress · 🟢 Complete · 🔵 Complete + written up
+Status key: 🟡 In progress · 🟢 Complete · 🔵 Complete + written up
 
 ---
 
@@ -39,7 +35,7 @@ Update the status column as you go: 🟡 In progress · 🟢 Complete · 🔵 Co
 Every lab follows the same structure, and the structure is the point:
 
 ```
-NN-lab-name/
+lab-name/
 ├── README.md        # what it is, how to run it, what I found
 ├── LAB-NOTES.md     # the running log — errors, dead ends, fixes
 ├── terraform/       # or ansible/ — the environment, as code
