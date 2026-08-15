@@ -50,6 +50,8 @@ Concretely, every check in these repos has to satisfy two properties:
 | 04 | CI skip guard | If the suite skips instead of running, the job fails |
 | 02 | `scripts/verify_ground_truth.py` | Both directions, and both were induced deliberately |
 | 11 | Pester suite | Sabotaged the UNEXPECTED branch, watched it go red, restored |
+| 13 | Chaos target selection | Feed it a `Terminating` instance; it must return None rather than kill something already dead |
+| 14 | CI job `Prove the tests can fail` | Three breaks applied in CI, and the build fails if the suite does not catch each one |
 
 ## What this does not fix
 
@@ -59,3 +61,20 @@ unverifiable locally no matter how many positive controls are added.
 
 That is what `06/scripts/prove-enforcement.sh` is for: one free run, four
 checks, and it closes labs 02, 05, 06 and 09 together.
+
+## Lab 14 automated it
+
+Every control above was run by hand once, which means it was true once. Lab 14
+moved the idea into CI: a job that applies three deliberate breaks to the module
+and **fails the build if the test suite does not catch each one**.
+
+That is the difference between "I verified this" and "this stays verified." A
+suite can rot into uselessness on any commit, and nothing about a green badge
+would change.
+
+It also caught its own version of the bug. Lab 14's tests reported
+`9 passed, 0 failed` on my machine, and in a clean environment reported
+`0 passed, 1 failed, 8 skipped`, because the AWS provider validates credentials
+at init even for a plan. Eight skips read as fine in a CI summary. That is the
+eighth occurrence of the same failure shape in this portfolio, and the first one
+found by a rule written after the previous seven.

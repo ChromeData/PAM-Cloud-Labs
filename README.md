@@ -41,10 +41,11 @@ Most ran without any cloud account: Docker for Conjur and Kubernetes, LocalStack
 | [11](https://github.com/ChromeData/psPAS-PAM-Automation) | **CyberArk/Idira PAM automation with psPAS** | Account lifecycle plus drift reconciliation as idempotent runbooks | 29 tests; reconciler run against a stub tenant |
 | [12](https://github.com/ChromeData/Network-Isolation-Access-Control) | **Network isolation as an access control** | The layer under IAM: can this host even reach the endpoint | 15 tests; verified on real AWS, negative control run live |
 | [13](https://github.com/ChromeData/HA-Application-Platform) | **Highly available application platform** | Two AZs, self healing, and Terraform state a team can share | 12 tests; broke it on real AWS, 11 of 12 requests survived |
+| [14](https://github.com/ChromeData/terraform-aws-secure-vpc) | **Reusable secure VPC Terraform module** | The secure network is the default; the insecure one costs you an argument | 9 tests, no AWS account needed; each one proven by a deliberate break |
 
 ### Positive controls
 
-Seven times while building these labs, a tool reported success while reading nothing: gitleaks after a version bump, checkov twice on nested ARM, the RBAC linter on live `kubectl` output, PSRule twice, and a pytest skip guard declared where pytest never looks. None announced itself.
+Eight times while building these labs, a tool reported success while reading nothing: gitleaks after a version bump, checkov twice on nested ARM, the RBAC linter on live `kubectl` output, PSRule twice, a pytest skip guard declared where pytest never looks, and lab 14's own test suite reporting `9 passed` in an environment where eight of them had silently skipped. None announced itself.
 
 Two more of the same shape appeared in the checks written *for* those bugs, which is the part worth sitting with.
 
